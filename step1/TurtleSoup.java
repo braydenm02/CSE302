@@ -4,7 +4,6 @@
  * John Belak
  * Brayden Miranda
  */
-package turtle;
 
 import java.lang.Math;
 import java.util.List;
