@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class step1 {
+public class step2 {
 
     private static Scanner scan;
     private static String token;
@@ -9,7 +9,7 @@ public class step1 {
 
     public static void main(String[] args) {
 
-        String input = "step1\\testProgramStep1.txt";
+        String input = "step1\\testProgramStep2.txt";
         turtle = new DrawableTurtle();
 
         try {
@@ -38,11 +38,12 @@ public class step1 {
      * Parses the lines between the begin and end token
      */
     public static void block() {
+        System.out.println(token);
         advance(); // Begin token
-
         while (!("end".equals(token))) {
             statement();
         }
+        System.out.println(token);
         advance(); // End token
     }
 
@@ -53,13 +54,21 @@ public class step1 {
         switch (token) {
             case "forward":
                 advance();
+                System.err.print("forward: ");
                 int distance = number();
                 turtle.forward(distance);
             case "turn":
                 advance();
+                System.err.print("turn: ");
                 int angle = number();
                 turtle.turn(angle);
+            case "loop":
+                advance();
+                System.err.print("loop: ");
+                int count = number();
+                loop(count);
             case "end":
+                System.err.println("end");
                 break;
             default:
                 throw new IllegalArgumentException("Invalid Command: " + token);
@@ -75,11 +84,21 @@ public class step1 {
         int value = 0;
         if (token.matches("^-?\\d+$")) {
             value = Integer.parseInt(token);
+            System.err.println(value);
             advance();
         } else {
             throw new IllegalArgumentException("Not an Integer: " + token);
         }
         return value;
+    }
+
+    public static void loop(int count) {
+        if (!"begin".equals(token)) {
+            throw new IllegalArgumentException("Expected 'begin' after loop count.");
+        }
+        for (int i = 0; i < count; i++) {
+            block();
+        }
     }
 
     /**
