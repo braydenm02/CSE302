@@ -30,18 +30,18 @@ public class TurtleParser {
     /**
      * The list of all of the tokens parsed by this class.
      */
-    private List<String> tokens = new ArrayList<String>();
+    protected List<String> tokens = new ArrayList<String>();
 
     /**
      * The turtle that is being used to actually draw the contents. For the
      * turtle parser it is used
      */
-    private DrawableTurtle turtle = new DrawableTurtle();
+    protected DrawableTurtle turtle = new DrawableTurtle();
 
     /**
      * Indexing used in loops for repeated actions.
      */
-    private int index;
+    protected int index;
 
     /**
      * The distance that the turtle should be traveling, stored here while its in
@@ -49,38 +49,57 @@ public class TurtleParser {
      * about the language being used. For example whenever "distance = 50" exists, that
      * means that the variable distance becomes 50 until it is changed.
      */
-    private int distance;
+    protected int distance;
 
     /**
      * The angle that the turtle is to turn. This is stored here while its parsing.
      * This is persitent data that is stored whenever the note "angle = 50" exists.
      * That means the variable of angle is 50 until it is changed.
      */
-    private int angle;
+    protected int angle;
 
     /**
      * Times is a variable present in the language, and is used to determine
      * the number of times that a loop will occur.
      */
-    private int times;
+    protected int times;
 
     /**
      * Stores the filepath that the turtle parser is reading from. 
      * This is the source file for the language being parsed.
      */
-    private String filePath;
+    protected String filePath;
 
     // === *** Constructor *** === //
 
+    /**
+     * Creates the TurtleParser. This only assigns the filepath, but does not actually
+     * draw the provided source file.
+     * 
+     * @param filePath the filepath.
+     */
     public TurtleParser(String filePath) {
         this.filePath = filePath;
     }
 
-    // === *** Parsing Methods *** === //
+    // === *** Drawing and Parsing Methods *** === //
 
-    public void draw() {
+    /**
+     * Draws the conents of the file. This will parse out the contents of the provided
+     * file when the turle parser was created. If the provided filepath is not a real
+     * file by the time this draw method is called, a FileNotFoundException will be
+     * thrown.
+     * 
+     * @implSpec Preconditions: The file path provided upon construction is a real file and is
+     *                  formatted correctly at the time this method is called.
+     * 
+     * 
+     * @throws FileNotFoundException if the file provided upon construction is not
+     *                      a real file by the time this method is called.
+     */
+    public void draw() throws FileNotFoundException {
 
-        try (Scanner scan = new Scanner(new File(filePath))) {
+        Scanner scan = new Scanner(new File(filePath));
 
             while(scan.hasNext()) {
                 tokens.add(scan.next());
@@ -88,17 +107,24 @@ public class TurtleParser {
 
             scan.close();
 
-        } catch (FileNotFoundException error) {
-
-        }
-
         block(0);
 
         turtle.draw();
         
     }
 
-    private void block(int start) {
+    /**
+     * A block is an entire "block" being parsed. A block is anything that is surrounded
+     * by the "begin" and "end" keywords. A block may contain several loops or anything
+     * else.
+     * 
+     * @implSpec Preconditions: The index provided is a token indicating the start of a block.
+     * 
+     * @throws IllegalArgumentException if the provided start token is "begin"
+     * 
+     * @param start the index of the token that is being processed.
+     */
+    protected void block(int start) {
 
         if (!(tokens.get(start).equals("begin"))) {
             throw new IllegalArgumentException("Blocks must start with Begin");
@@ -115,7 +141,24 @@ public class TurtleParser {
 
     }
 
-    private void statement(int current) {
+    /**
+     * Used whenever there is an assignment operator, and parses the assigning
+     * of values that are used. Each assignment is a reserved word for storing
+     * the key attributes of the Turtle parser.
+     * 
+     * @implSpec Preconditions: The index provided is the index of a reserved variable
+     *                  name.
+     * 
+     * @throws IllegalArgumentException if the index of the token provided is
+     *                              not a reserved word for variable
+     *                              assignment.
+     * 
+     * @impleNote Reserved Words: foward, turn, loop, dist, angle, times
+     * 
+     * 
+     * @param current the index of the token that is being parsed by the statement.
+     */
+    protected void statement(int current) {
 
         String token = tokens.get(current);
         int tokenVal;
@@ -167,7 +210,23 @@ public class TurtleParser {
 
     }
 
-    private int assignment(int assign) { 
+    /**
+     * Provided with a token index, will return the variable the token at
+     * that index is trying to modify.
+     * 
+     * @implNote Preconditions: The parameter is the index of a token that
+     *              corresponds to a variable within the turtle environment
+     * 
+     * @implNote Postconditions: A value equal to the specified token's
+     *                      variable correspondance.
+     * 
+     * @param assign the index of the token that is attempting to alter
+     *                  an attribute of the turtle parser environment.
+     * 
+     * 
+     * @return the value of the variable.
+     */
+    protected int assignment(int assign) { 
         if (tokens.get(assign).equals("angle")) {
             return angle;
         }
@@ -183,7 +242,19 @@ public class TurtleParser {
         return number(tokens.get(assign));
     }
 
-    private void loop(int count, int place) {
+    /**
+     * When provided with a loop, the loop may contain several blocks, and
+     * so whenever a loop is encountered it will call the block as to parse
+     * the contents of the loop. This is because the loop may contain several
+     * blocks.
+     * 
+     * @implNote Preconditions: place is an index of a token representing a
+     *                          start of a block.
+     * 
+     * @param count the number of blocks inside the loop
+     * @param place the index of the block
+     */
+    protected void loop(int count, int place) {
         for (int i = 0; i < count; i++) {
 
             index = place;
@@ -193,18 +264,25 @@ public class TurtleParser {
         index++;
     }
 
-    private int number(String curr) {
+    /**
+     * Ensures that the number matches the pattern of an integer. This is one
+     * of the smallest units in the grammar, just something that is an integer.
+     * 
+     * @implNote Precondition: the string can be parsed to an integer
+     * 
+     * @implNote PostCondition: a value equal to the string's written integer
+     *              value.
+     * 
+     * @throws IllegalArgumentException if the value passed is not an integer.
+     * 
+     * @param curr a string that has the 
+     */
+    protected int number(String curr) {
         if (curr.matches("^-?\\d+$")) {
             return Integer.parseInt(curr);
         } else {
             throw new IllegalArgumentException("Not an Integer: " + curr);
         }
     }
-
-    public static void main(String[] args) {
-        TurtleParser parser = new TurtleParser("./Work/testProgramStep3.txt");
-        parser.draw();
-    }
-
 
 }

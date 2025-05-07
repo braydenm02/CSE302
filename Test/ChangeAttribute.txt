@@ -1,0 +1,8 @@
+begin
+    times = 4
+    times = 8
+    dist = 40
+    dist = 80
+    angle = 60
+    angle = 120
+end

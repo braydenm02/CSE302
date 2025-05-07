@@ -1,0 +1,5 @@
+begin
+    times = 4
+    dist = 40
+    angle = 60
+end
