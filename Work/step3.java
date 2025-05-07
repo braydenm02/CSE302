@@ -1,3 +1,4 @@
+package Work;
 import java.io.File;
 import java.util.*;
 
@@ -11,15 +12,14 @@ public class step3 {
     //TODO: This is part of step three
     private static int dist, angle, times;
 
-    public static void main(String[] args) {
+    public static void parse(String filePath) {
 
-        String input = "step1\\testProgramStep3.txt";
         turtle = new DrawableTurtle();
         tokens = new ArrayList<>();
 
         try {
             //Scans the file as an arraylist of tokens
-            Scanner scan = new Scanner(new File(input));
+            Scanner scan = new Scanner(new File(filePath));
             while (scan.hasNext()) {
                 tokens.add(scan.next());
             }

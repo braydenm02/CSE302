@@ -2,6 +2,8 @@
  * Redistribution of original or derived work requires permission of course staff.
  */
 
+package Work;
+
 /**
  * Turtle interface.
  *
