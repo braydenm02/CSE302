@@ -1,146 +1,87 @@
-import java.io.*;
+import java.io.File;
 import java.util.*;
 
 public class step2 {
-
-    //Global Private variables to help with parsing file
-    private static Scanner scan;
-    private static String token;
-    private static int curNum;
+    private static List<String> tokens;
     private static DrawableTurtle turtle;
+    private static int index;
 
     public static void main(String[] args) {
 
         String input = "step1\\testProgramStep2.txt";
         turtle = new DrawableTurtle();
+        tokens = new ArrayList<>();
 
         try {
-            scan = new Scanner(new File(input));
-            advance();
-
-            if ("begin".equals(token)) {
-                block();
-                // Only draws if EOF reached
-                if (!"programEnd".equals(token)) {
-                    System.err.println("Expected 'programEnd' at the end.");
-                } else {
-                    turtle.draw();
-                }
-            } else {
-                System.err.println("Program must start with 'begin'");
+            Scanner scan = new Scanner(new File(input));
+            while (scan.hasNext()) {
+                tokens.add(scan.next());
             }
+            scan.close();
         } catch (Exception e) {
             // Stops program if there is an error
             System.err.println("Error: " + e.getMessage());
         }
+        
+        index = 0;
+        block(0);
 
+        turtle.draw();
     }
 
-    /**
-     * Parses the lines between the begin and end token
-     */
-    public static void block() {
-        advance(); // Begin token
-        while (!("end".equals(token))) {
-            statement();
+    public static void block(int start) {
+        if (!(tokens.get(start).equals("begin"))) {
+            throw new IllegalArgumentException("Blocks Must start with Begin");
         }
-        advance(); // End token
-    }
-
-    /**
-     * Detects tokens and takes appropriate action
-     */
-    public static void statement() {
-        switch (token) {
-            case "forward":
-                advance();
-                curNum = number();
-                turtle.forward(curNum);
-                break;
-            case "turn":
-                advance();
-                curNum= number();
-                turtle.turn(curNum);
-                break;
-            case "loop":
-                advance();
-                curNum = number();
-                loop(curNum);
-                break;
-            case "end":
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid Command: " + token);
-        }
-    }
-
-    /**
-     * Parses the next token as an integer if possible
-     * 
-     * @return integer value of token
-     */
-    private static int number() {
-        int value = 0;
-        if (token.matches("^-?\\d+$")) {
-            value = Integer.parseInt(token);
-            advance();
-        } else {
-            throw new IllegalArgumentException("Not an Integer: " + token);
-        }
-        return value;
-    }
-
-    /**
-     * Runs a nested block of code a certain number of times
-     * @param count Number of repeated runs
-     */
-    public static void loop(int count) {
-        if (!"begin".equals(token)) {
-            throw new IllegalArgumentException("Expected 'begin' after loop count.");
-        }
-
-        // Helps with running the loops
-        List<String> toklist = new ArrayList<>();
-        List<Integer> vallist = new ArrayList<>();
-
-
-        //Same functionality as block() but allows us to copy the values into 
-        // the temporary arrays
-        advance(); // Begin Token
-        while (!token.equals("end")) {
-            toklist.add(token);
-            statement();
-            vallist.add(curNum);
-        }
-        advance(); //End token
-
-        // The block of code is run once before this looping funcionality, so
-        // we run tthrough the lists count - 1 times
-        for (int i = 0; i < count - 1; i++) {
-            for (int j = 0; j < toklist.size(); j++) {
-                String currtok = toklist.get(j);
-                int curval = vallist.get(j);
-
-                if (currtok.equals("forward")) {
-                    turtle.forward(curval);
-                }
-
-                if (currtok.equals("turn")) {
-                    turtle.turn(curval);
-                }   
+        index = index + 1;
+        while (!(tokens.get(index).equals("end"))) {
+            if (tokens.get(index).equals("programEnd")) {
+                return;
             }
+            statement(index);
         }
         
     }
 
-    /**
-     * Method for setting tokens and detecting EOF
-     */
-    private static void advance() {
-        if (scan.hasNext()) {
-            token = scan.next();
+    public static void statement(int current) {
+        String token = tokens.get(current);
+        int tokenVal;
+        
+        switch (token) {
+            case "forward" -> {
+                tokenVal  = number(tokens.get(current + 1));
+                turtle.forward(tokenVal);
+                index = index + 2;
+            }
+            case "turn" -> {
+                tokenVal  = number(tokens.get(current + 1));
+                turtle.turn(tokenVal);
+                index = index + 2;
+            }
+            case "loop" -> {
+                tokenVal  = number(tokens.get(current + 1));
+                index = index + 2;
+                loop(tokenVal, index);
+            }
+            default -> {
+                throw new IllegalArgumentException("Not Valid: " + token);
+            }
+        }
+    }
+
+    public static void loop(int count, int place) {
+        for (int i = 0; i < count; i++) {
+            index = place;
+            block(place);
+        }
+        index++;
+    }
+
+    public static int number(String curr) {
+        if (curr.matches("^-?\\d+$")) {
+            return Integer.parseInt(curr);
         } else {
-            token = "programEnd";
+            throw new IllegalArgumentException("Not an Integer: " + curr);
         }
     }
 }
